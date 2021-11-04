@@ -2117,3 +2117,19 @@ func calculateSize(packetPtrs []uintptr, number uint) uint64 {
 	}
 	return size
 }
+
+//add below
+func GetCurrentSpeed() (uint64, uint64) {
+	return schedState.getSpeed()
+}
+
+func GetDroppedCount() uint {
+	return schedState.getDropped()
+}
+
+func GetPort0MAC() string {
+	if len(createdPorts) > 0 {
+		return createdPorts[0].MAC.String()
+	}
+	return ""
+}

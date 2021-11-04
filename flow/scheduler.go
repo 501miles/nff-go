@@ -418,9 +418,9 @@ func (scheduler *scheduler) schedule(schedTime uint) {
 			}
 			if scheduler.Dropped != 0 {
 				common.LogDrop(common.Debug, "Flow functions together dropped", scheduler.Dropped, "packets")
-				// It is race condition here, however it is just statistics.
-				// It can be not accurate, but on the other hand doesn't influence performance
-				scheduler.Dropped = 0
+			//	// It is race condition here, however it is just statistics.
+			//	// It can be not accurate, but on the other hand doesn't influence performance
+			//	scheduler.Dropped = 0
 			}
 			low.ReportMempoolsState()
 		default:
@@ -849,4 +849,26 @@ func (scheduler *scheduler) measure(N int32, clones int) uint64 {
 	close(stopper[1])
 	close(report)
 	return avg / 5
+}
+
+func (scheduler *scheduler) getSpeed() (uint64, uint64) {
+	var pkt, mbit uint64
+	for i := range scheduler.ff {
+		ffi := scheduler.ff[i]
+		switch ffi.fType {
+		case segmentCopy:
+			for q := 0; q < ffi.instanceNumber; q++ {
+				out := ffi.instance[q].reportedState.V.normalize(schedTime)
+				pkt += out.Packets
+				mbit += out.Bytes
+			}
+		}
+	}
+	return pkt, mbit
+}
+
+func (scheduler *scheduler) getDropped() uint {
+	count := scheduler.Dropped
+	scheduler.Dropped = 0
+	return count
 }
